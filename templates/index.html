@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Camera Stream with Filters</title>
+        <style>
+            body {
+                text-align: center;
+            }
+            .slider-container {
+                margin: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Raspberry Pi HQ Camera Stream</h1>
+        <div>
+            <img src="{{ url_for('video_feed') }}" width="1440" height="640" />
+        </div>
+
+        <div class="slider-container">
+            <h3>Hue</h3>
+            Lower:
+            <input
+                type="range"
+                id="hue_lower"
+                min="0"
+                max="255"
+                value="{{ ctx.hue[0] }}"
+            />
+            Higher:
+            <input
+                type="range"
+                id="hue_higher"
+                min="0"
+                max="255"
+                value="{{ ctx.hue[1] }}"
+            />
+        </div>
+
+        <div class="slider-container">
+            <h3>Saturation</h3>
+            Lower:
+            <input
+                type="range"
+                id="saturation_lower"
+                min="0"
+                max="255"
+                value="{{ ctx.saturation[0] }}"
+            />
+            Higher:
+            <input
+                type="range"
+                id="saturation_higher"
+                min="0"
+                max="255"
+                value="{{ ctx.saturation[1] }}"
+            />
+        </div>
+
+        <div class="slider-container">
+            <h3>Lightness</h3>
+            Lower:
+            <input
+                type="range"
+                id="lightness_lower"
+                min="0"
+                max="255"
+                value="{{ ctx.lightness[0] }}"
+            />
+            Higher:
+            <input
+                type="range"
+                id="lightness_higher"
+                min="0"
+                max="255"
+                value="{{ ctx.lightness[1] }}"
+            />
+        </div>
+
+        <div class="slider-container">
+            <h3>Blur</h3>
+            <input
+                type="range"
+                id="blur"
+                min="0"
+                max="10"
+                value="{{ ctx.blur }}"
+            />
+        </div>
+
+        <script>
+            const sliders = ["hue", "saturation", "lightness", "blur"];
+
+            sliders.forEach((slider) => {
+                if (slider !== "blur") {
+                    document
+                        .getElementById(`${slider}_lower`)
+                        .addEventListener("input", updateFilters);
+                    document
+                        .getElementById(`${slider}_higher`)
+                        .addEventListener("input", updateFilters);
+                } else {
+                    document
+                        .getElementById(slider)
+                        .addEventListener("input", updateFilters);
+                }
+            });
+
+            function updateFilters() {
+                const filterValues = {
+                    hue: [
+                        parseInt(document.getElementById("hue_lower").value),
+                        parseInt(document.getElementById("hue_higher").value),
+                    ],
+                    saturation: [
+                        parseInt(
+                            document.getElementById("saturation_lower").value,
+                        ),
+                        parseInt(
+                            document.getElementById("saturation_higher").value,
+                        ),
+                    ],
+                    lightness: [
+                        parseInt(
+                            document.getElementById("lightness_lower").value,
+                        ),
+                        parseInt(
+                            document.getElementById("lightness_higher").value,
+                        ),
+                    ],
+                    blur: parseInt(document.getElementById("blur").value),
+                };
+
+                fetch("/update_filters", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(filterValues),
+                })
+                    .then((response) => response.json())
+                    .then((data) => console.log("Successful update:", data))
+                    .catch((error) => console.error("Error:", error));
+            }
+        </script>
+    </body>
+</html>
